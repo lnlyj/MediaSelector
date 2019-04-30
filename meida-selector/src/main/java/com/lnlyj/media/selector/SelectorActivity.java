@@ -1,22 +1,22 @@
 package com.lnlyj.media.selector;
 
-import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 
 import com.lnlyj.media.selector.adapter.MediaAdapter;
+import com.lnlyj.media.selector.bean.MediaInfo;
 import com.lnlyj.media.selector.config.Config;
 import com.lnlyj.media.selector.config.MediaConfig;
-import com.lnlyj.media.selector.widget.EmptyRecyclerView;
 
-public class SelectorActivity extends AppCompatActivity implements MediaAdapter.OnItemClickListener {
+import java.util.ArrayList;
+import java.util.List;
 
-    private EmptyRecyclerView recyclerView;
-    private MediaAdapter adapter;
+public class SelectorActivity extends AppCompatActivity implements MediaAdapter.MediaAdapterDelegate {
 
     private MediaConfig config;
+    private List<MediaInfo> selects = new ArrayList<>();
+
+    private SelectorFragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,24 +29,35 @@ public class SelectorActivity extends AppCompatActivity implements MediaAdapter.
             config = MediaConfig.getInstance();
         }
 
-        recyclerView = findViewById(R.id.recycler_view);
-        recyclerView.setEmptyView(findViewById(R.id.empty));
+        if (savedInstanceState != null) {
+            fragment = (SelectorFragment) getSupportFragmentManager().findFragmentByTag("SelectorFragment");
+        }
 
-        GridLayoutManager layoutManager = new GridLayoutManager(this, config.spanCount);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter = new MediaAdapter(this));
-        adapter.setOnItemClickListener(this);
+        if (fragment == null) {
+            fragment = new SelectorFragment();
+            fragment.setArguments(getIntent().getExtras());
+        }
+
+        getSupportFragmentManager().beginTransaction().add(R.id.content, fragment, "SelectorFragment").show(fragment).commit();
+
     }
 
     @Override
-    public void onItemClick(int position) {
-
+    public boolean isSelect(MediaInfo info) {
+        return selects.contains(info);
     }
 
     @Override
-    public void onCheckClick(int position) {
-
+    public void toggleSelect(MediaInfo info) {
+        if (selects.contains(info)) {
+            selects.remove(info);
+        } else {
+            selects.add(info);
+        }
     }
 
-
+    @Override
+    public int getSelectCount() {
+        return selects.size();
+    }
 }

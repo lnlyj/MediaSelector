@@ -22,10 +22,17 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaHolder> {
     private List<MediaInfo> selects = new ArrayList<>();
 
     private OnItemClickListener onItemClickListener;
+    private MediaAdapterDelegate delegate;
 
     public interface OnItemClickListener {
         void onItemClick(int position);
         void onCheckClick(int position);
+    }
+
+    public interface MediaAdapterDelegate {
+        boolean isSelect(MediaInfo info);
+        void toggleSelect(MediaInfo info);
+        int getSelectCount();
     }
 
     public MediaAdapter(Context context) {
@@ -61,17 +68,13 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaHolder> {
 
     public boolean isSelect(int position) {
         MediaInfo info = getMediaInfo(position);
-        return selects.contains(info);
+        return delegate.isSelect(info);
     }
 
     public void toggleSelect(int position) {
         MediaInfo info = getMediaInfo(position);
-
-        if (selects.contains(info)) {
-            selects.remove(info);
-        } else {
-            selects.add(info);
-        }
+        delegate.toggleSelect(info);
+        notifyItemChanged(position);
     }
 
     public MediaInfo getMediaInfo(int position) {
@@ -79,10 +82,14 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaHolder> {
     }
 
     public int getSelectCount() {
-        return selects.size();
+        return delegate.getSelectCount();
     }
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
+    }
+
+    public void setDelegate(MediaAdapterDelegate delegate) {
+        this.delegate = delegate;
     }
 }
